@@ -38,6 +38,7 @@ if __name__ == '__main__':
     limits = stats.mstats.mquantiles(
         image,
         prob=[0.02, 0.98])
+    input_file.close()
     plt.imshow(image, interpolation="none")
     plt.clim(*limits)
     plt.ion()
