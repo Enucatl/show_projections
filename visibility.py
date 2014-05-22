@@ -28,19 +28,15 @@ if __name__ == '__main__':
     file_name = args.file[0]
     min_pixel = args.min_pixel
     max_pixel = args.max_pixel
-    group_name = "raw_images"
     input_file = h5py.File(file_name)
-    datasets = [dataset
-                for dataset in input_file[group_name].values()
-                if isinstance(dataset, h5py.Dataset)]
-    stacked = np.dstack(datasets)
-    image = stacked[0, min_pixel:max_pixel].T
-    limits = stats.mstats.mquantiles(
-        image,
-        prob=[0.02, 0.98])
+    dataset = input_file["postprocessing/visibility_map"][
+        0, min_pixel:max_pixel, ...]
+    if len(dataset.shape) > 1:
+        dataset = np.mean(dataset, axis=0)
+    average = np.mean(dataset)
+    print(average)
     input_file.close()
-    plt.imshow(image, interpolation="none")
-    plt.clim(*limits)
+    plt.plot(dataset)
     plt.ion()
     plt.show()
     input("Press ENTER to quit.")

@@ -15,16 +15,22 @@ if __name__ == '__main__':
     args = parser.parse_args()
     input_file = h5py.File(args.file[0], "r")
     deconvolved = input_file["postprocessing/deconvolved"]
-    print(deconvolved[220, 40, ...])
     dataset = np.zeros(deconvolved.shape[:-1] + (3, ))
     _, images = plt.subplots(3, 1, sharex=True)
-    print(deconvolved.shape)
+    padded = np.zeros(deconvolved.shape[:-1] +
+                      (deconvolved.shape[-1] + 1,))
+    padded[..., :-1] = deconvolved[...]
+    padded[..., -1] = deconvolved[..., 0]
+    dataset[..., 0] = np.sum(padded, axis=-1)
+    angles = np.linspace(-np.pi, np.pi, padded.shape[-1])
+    dataset[..., 1] = np.dot(padded, angles)
+    dataset[..., 2] = stats.mstats.moment(
+        padded,
+        moment=2,
+        axis=-1)
     for i, image in enumerate(images):
-        dataset[..., i] = stats.mstats.moment(
-            deconvolved,
-            moment=i,
-            axis=-1)
         data = dataset[..., i].T
+        print(data)
         print(data.shape)
         limits = stats.mstats.mquantiles(
             data,
@@ -32,7 +38,7 @@ if __name__ == '__main__':
         image.axis("off")
         matplotlib_image = image.imshow(data, interpolation="none")
         matplotlib_image.set_clim(*limits)
-    #print(dataset)
+    # print(dataset)
     plt.tight_layout()
     plt.ion()
     plt.show()
