@@ -22,12 +22,10 @@ if __name__ == '__main__':
     padded[..., :-1] = deconvolved[...]
     padded[..., -1] = deconvolved[..., 0]
     dataset[..., 0] = np.sum(padded, axis=-1)
-    angles = np.linspace(-np.pi, np.pi, padded.shape[-1])
-    dataset[..., 1] = np.dot(padded, angles)
-    dataset[..., 2] = stats.mstats.moment(
-        padded,
-        moment=2,
-        axis=-1)
+    angles = np.linspace(np.pi, -np.pi, padded.shape[-1])
+    dataset[..., 1] = np.dot(padded, angles) / dataset[..., 0]
+    dataset[..., 2] = -np.dot(
+        (padded - dataset[..., 1, np.newaxis]) ** 2, angles) / dataset[..., 0]
     for i, image in enumerate(images):
         data = dataset[..., i].T
         print(data)
